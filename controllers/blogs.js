@@ -1,6 +1,7 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
 const User = require('../models/user')
+const authenticator = require('../utils/middleware').authenticator
 
 blogsRouter.get('/', async (req, res) => {
 	const blogs = await Blog
@@ -8,8 +9,8 @@ blogsRouter.get('/', async (req, res) => {
 	res.json(blogs.map(blog => blog.toJSON()))
 })
 
-blogsRouter.post('/', async (req, res) => {
-	const user = await User.findOne({})
+blogsRouter.post('/', authenticator, async (req, res) => {
+	const user = await User.findById(req.decodedToken.id)
 
 	const blog = new Blog({
 		...req.body,
@@ -24,9 +25,15 @@ blogsRouter.post('/', async (req, res) => {
 	res.status(201).json(result.toJSON())
 })
 
-blogsRouter.delete('/:id', async (req, res) => {
-	await Blog.findByIdAndDelete(req.params.id)
-	res.status(204).end()
+blogsRouter.delete('/:id', authenticator, async (req, res) => {
+	const blogToDelete = await Blog.findById(req.params.id)
+
+	if (blogToDelete.user.toString() === req.decodedToken.id.toString()) {
+		await Blog.findByIdAndDelete(req.params.id)
+		return res.status(204).end()
+	}
+
+	return res.status(401).json({ error: 'cannot delete blogs created by a different user' })
 })
 
 blogsRouter.put('/:id', async (req, res) => {

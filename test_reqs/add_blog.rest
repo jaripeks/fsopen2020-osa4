@@ -1,8 +1,9 @@
 POST http://localhost:3003/api/blogs
 Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3RlcmkiLCJpZCI6IjVlYzU0YTI0NjQwNTM0NDQwNGRjNzAyOCIsImlhdCI6MTU4OTk4ODk3M30.lpWD73ipGBiaCzSDJ-mTxWvgK31D2JZswnoL1lGSRRA
 
 {
-    "title": "Tämä on blogi",
+    "title": "Tämäkin on blogi",
 	"author": "hän",
 	"url": "String"
 }
