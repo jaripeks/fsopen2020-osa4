@@ -73,14 +73,23 @@ describe('returned blogs', () => {
  */
 describe('POSTing a blog', () => {
 	test('adds the specific blog to DB', async () => {
+		//loginn
+		const user = { username: 'testimies', password: 'root' }
+		const loginResponse = await api
+			.post('/api/login')
+			.send(user)
+		const token = `bearer ${loginResponse.body.token}`
+
 		const newBlog = {
 			title: 'Tuntematon Sotilas, post-irony-remix',
 			author: 'Wayne Castle',
 			url: 'https://safe-stream-70600.herokuapp.com/',
 			likes: 0
 		}
+
 		await api
 			.post('/api/blogs')
+			.set('Authorization', token)
 			.send(newBlog)
 			.expect(201)
 			.expect('Content-Type', /application\/json/)
@@ -93,6 +102,13 @@ describe('POSTing a blog', () => {
 	})
 
 	test('without likes defaults to likes === 0', async () => {
+		//loginn
+		const user = { username: 'testimies', password: 'root' }
+		const loginResponse = await api
+			.post('/api/login')
+			.send(user)
+		const token = `bearer ${loginResponse.body.token}`
+
 		const newBlog = {
 			title: 'Täällä pohjantähden alla, generation-remix-remix',
 			author: 'Wayne Castle',
@@ -100,6 +116,7 @@ describe('POSTing a blog', () => {
 		}
 		const response = await api
 			.post('/api/blogs')
+			.set('Authorization', token)
 			.send(newBlog)
 			.expect(201)
 			.expect('Content-Type', /application\/json/)
@@ -108,29 +125,64 @@ describe('POSTing a blog', () => {
 	})
 
 	test('without title AND url results in Bad request', async () => {
+		//loginn
+		const user = { username: 'testimies', password: 'root' }
+		const loginResponse = await api
+			.post('/api/login')
+			.send(user)
+		const token = `bearer ${loginResponse.body.token}`
+
 		const newBlog = {
 			author: 'Akon (so lonely)'
 		}
 
 		await api
 			.post('/api/blogs')
+			.set('Authorization', token)
 			.send(newBlog)
 			.expect(400)
 	})
 
+	test('without token results in Unauthorized', async () => {
+		const newBlog = {
+			title: 'Tuntematon Sotilas, post-irony-remix',
+			author: 'Wayne Castle',
+			url: 'https://safe-stream-70600.herokuapp.com/',
+			likes: 0
+		}
+
+		await api
+			.post('/api/blogs')
+			.send(newBlog)
+			.expect(401)
+	})
 })
 
+/**
+ * DELETE method
+ */
 test('delete removes a blog if id is valid', async () => {
+	//loginn
+	const user = { username: 'testimies', password: 'root' }
+	const loginResponse = await api
+		.post('/api/login')
+		.send(user)
+	const token = `bearer ${loginResponse.body.token}`
+
 	const blogsAtStart = await helper.blogsInDB()
 
 	await api
 		.delete(`/api/blogs/${blogsAtStart[0].id}`)
+		.set('Authorization', token)
 		.expect(204)
 
 	const blogs = await helper.blogsInDB()
 	expect(blogs.length).toBe(blogsAtStart.length - 1)
 })
 
+/**
+ * PUT method
+ */
 test('PUT updates a blog', async () => {
 	const blogsAtStart = await helper.blogsInDB()
 
