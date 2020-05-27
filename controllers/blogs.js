@@ -22,7 +22,11 @@ blogsRouter.post('/', authenticator, async (req, res) => {
 	user.blogs = user.blogs.concat(result._id)
 	await user.save()
 
-	res.status(201).json(result.toJSON())
+	const populatedResult = await Blog
+		.findById(result.id)
+		.populate('user', { blogs: 0 })
+
+	res.status(201).json(populatedResult.toJSON())
 })
 
 blogsRouter.delete('/:id', authenticator, async (req, res) => {
@@ -44,7 +48,9 @@ blogsRouter.put('/:id', async (req, res) => {
 		likes: req.body.likes ? req.body.likes : 0
 	}
 
-	const updated = await Blog.findByIdAndUpdate(req.params.id, blog, { new: true })
+	const updated = await Blog
+		.findByIdAndUpdate(req.params.id, blog, { new: true })
+		.populate('user', { blogs: 0 })
 	res.status(200).json(updated.toJSON())
 })
 
